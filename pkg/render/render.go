@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/justinas/nosurf"
 	"github.com/milemik/bookings_go/pkg/config"
 	"github.com/milemik/bookings_go/pkg/model"
 )
@@ -18,12 +19,13 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func AddTemplateData(td *model.TemplateData) *model.TemplateData {
+func AddTemplateData(td *model.TemplateData, r *http.Request) *model.TemplateData {
 	// We can add some default data here
+	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
-func RenderTemplate(w http.ResponseWriter, tmpl string, td *model.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *model.TemplateData) {
 
 	var ts map[string]*template.Template
 
@@ -46,7 +48,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, td *model.TemplateData) 
 	// Buffer if there is some error we will use buffer to get more info on it
 	buf := new(bytes.Buffer)
 
-	td = AddTemplateData(td)
+	td = AddTemplateData(td, r)
 
 	err := t.Execute(buf, td)
 	if err != nil {
