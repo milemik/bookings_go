@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/milemik/bookings_go/pkg/config"
@@ -75,6 +77,24 @@ func (m *Reposatory) PostAvailability(w http.ResponseWriter, r *http.Request) {
 	start := r.Form.Get("start")
 	end := r.Form.Get("end")
 	w.Write([]byte(fmt.Sprintf("POSTED on search availability %s and %s", start, end)))
+}
+
+type jsonResponse struct {
+	Ok      bool   `json:"ok"`
+	Message string `json:"message"`
+}
+
+// AvailabilityJSON handles respons of availability and sends json response
+func (m *Reposatory) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
+	response := jsonResponse{Ok: true, Message: "Available"}
+	out, err := json.MarshalIndent(response, "", "    ")
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println(string(out))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
 }
 
 // Contact renders search availability page
