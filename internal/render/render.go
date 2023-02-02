@@ -8,8 +8,8 @@ import (
 	"text/template"
 
 	"github.com/justinas/nosurf"
-	"github.com/milemik/bookings_go/pkg/config"
-	"github.com/milemik/bookings_go/pkg/model"
+	"github.com/milemik/bookings_go/internal/config"
+	"github.com/milemik/bookings_go/internal/model"
 )
 
 var app *config.AppConfig

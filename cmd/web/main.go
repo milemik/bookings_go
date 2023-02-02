@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/milemik/bookings_go/pkg/config"
-	"github.com/milemik/bookings_go/pkg/handlers"
-	"github.com/milemik/bookings_go/pkg/render"
+	"github.com/milemik/bookings_go/internal/config"
+	"github.com/milemik/bookings_go/internal/handlers"
+	"github.com/milemik/bookings_go/internal/render"
 )
 
 // Const can't be changed in application

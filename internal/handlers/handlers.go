@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/milemik/bookings_go/pkg/config"
-	"github.com/milemik/bookings_go/pkg/model"
-	"github.com/milemik/bookings_go/pkg/render"
+	"github.com/milemik/bookings_go/internal/config"
+	"github.com/milemik/bookings_go/internal/model"
+	"github.com/milemik/bookings_go/internal/render"
 )
 
 // Repo is reposatory used for handlers
