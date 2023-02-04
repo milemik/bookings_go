@@ -1,5 +1,7 @@
 package model
 
+import "github.com/milemik/bookings_go/internal/forms"
+
 type TemplateData struct {
 	StringMap map[string]string
 	IntMap    map[string]int
@@ -9,4 +11,5 @@ type TemplateData struct {
 	Flesh     string
 	Warning   string
 	Error     string
+	Form      *forms.Form
 }

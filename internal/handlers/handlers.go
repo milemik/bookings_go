@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/milemik/bookings_go/internal/config"
+	"github.com/milemik/bookings_go/internal/forms"
 	"github.com/milemik/bookings_go/internal/model"
 	"github.com/milemik/bookings_go/internal/render"
 )
@@ -54,7 +55,45 @@ func (m *Reposatory) About(w http.ResponseWriter, r *http.Request) {
 
 // Reservation renders the make reservation page
 func (m *Reposatory) Reservation(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "make-reservation.page.tmpl", &model.TemplateData{})
+	var emptyReservation model.Reservation
+
+	data := make(map[string]interface{})
+	data["reservation"] = emptyReservation
+
+	render.RenderTemplate(w, r, "make-reservation.page.tmpl", &model.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
+}
+
+// Reservation post reservation handle of posting reservation form
+func (m *Reposatory) PostReservation(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err == nil {
+		log.Println(err)
+	}
+	reservation := model.Reservation{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Phone:     r.Form.Get("phone"),
+		Email:     r.Form.Get("email"),
+	}
+	form := forms.New(r.PostForm)
+
+	// form.Has("first_name", r)
+	form.Required("first_name", "last_name", "email")
+	form.MinLength("first_name", 3, r)
+
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["reservation"] = reservation
+
+		render.RenderTemplate(w, r, "make-reservation.page.tmpl", &model.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
 }
 
 // Generals renders generals room page
