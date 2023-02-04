@@ -21,6 +21,10 @@ func NewTemplates(a *config.AppConfig) {
 
 func AddTemplateData(td *model.TemplateData, r *http.Request) *model.TemplateData {
 	// We can add some default data here
+	td.Flesh = app.Session.PopString(r.Context(), "flesh")
+	td.Warning = app.Session.PopString(r.Context(), "warning")
+	td.Error = app.Session.PopString(r.Context(), "error")
+
 	td.CSRFToken = nosurf.Token(r)
 	return td
 }
