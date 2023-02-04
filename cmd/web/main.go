@@ -23,38 +23,10 @@ var session *scs.SessionManager
 
 // main is our main function
 func main() {
-	// Put something in session
-	gob.Register(model.Reservation{})
-	// change this to true if PROD
-	app.InProduction = false
-
-	session = scs.New()
-
-	session.Lifetime = 24 * time.Hour
-	session.Cookie.Persist = true
-	session.Cookie.SameSite = http.SameSiteLaxMode
-	session.Cookie.Secure = app.InProduction // SSL - secure connection for PROD we should set it to TRUE
-
-	app.Session = session
-
-	tc, err := render.CreateTemplateCache()
-
+	err := run()
 	if err != nil {
-		log.Fatal("cannot create template cache")
+		log.Fatal(err)
 	}
-
-	app.TemplateCache = tc
-	// For prod this should be set to true
-	app.UseCache = false
-
-	repo := handlers.NewRepo(&app)
-	handlers.NewHandlers(repo)
-
-	render.NewTemplates(&app)
-
-	// http.HandleFunc("/", handlers.Repo.Home)
-	// http.HandleFunc("/about", handlers.Repo.About)
-	// http.HandleFunc("/foo", handlers.Foo) //this need to be fixed - cacheTemplate
 
 	fmt.Printf("Server started on port: %s\n", portNumber)
 	// _ = http.ListenAndServe(portNumber, nil)
@@ -65,4 +37,41 @@ func main() {
 
 	err = srv.ListenAndServe()
 	log.Fatal(err)
+}
+
+func run() error {
+		// Put something in session
+		gob.Register(model.Reservation{})
+		// change this to true if PROD
+		app.InProduction = false
+	
+		session = scs.New()
+	
+		session.Lifetime = 24 * time.Hour
+		session.Cookie.Persist = true
+		session.Cookie.SameSite = http.SameSiteLaxMode
+		session.Cookie.Secure = app.InProduction // SSL - secure connection for PROD we should set it to TRUE
+	
+		app.Session = session
+	
+		tc, err := render.CreateTemplateCache()
+	
+		if err != nil {
+			log.Fatal("cannot create template cache")
+			return err
+		}
+	
+		app.TemplateCache = tc
+		// For prod this should be set to true
+		app.UseCache = false
+	
+		repo := handlers.NewRepo(&app)
+		handlers.NewHandlers(repo)
+	
+		render.NewTemplates(&app)
+	
+		// http.HandleFunc("/", handlers.Repo.Home)
+		// http.HandleFunc("/about", handlers.Repo.About)
+		// http.HandleFunc("/foo", handlers.Foo) //this need to be fixed - cacheTemplate
+		return nil
 }
