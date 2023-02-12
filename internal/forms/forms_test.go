@@ -3,7 +3,6 @@ package forms
 import (
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 )
 
@@ -86,87 +85,92 @@ func TestRequredWithFieldsMissingOne(t *testing.T) {
 	}
 }
 
-func TestHasEmpty(t *testing.T) {
-	testRequest := httptest.NewRequest("GET", "/something", &strings.Reader{})
-	testForm := New(testRequest.PostForm)
-
-	result := testForm.Has("a", testRequest)
-
-	if result != false {
-		t.Error("Expected false got true")
-	}
+var hasValueTestData = []struct {
+	fieldName      string
+	fieldValue     string
+	expectedResult bool
+}{
+	{"a", "", false},
+	{"a", "aaa", true},
 }
 
 func TestHasValueIsHere(t *testing.T) {
-	tr := httptest.NewRequest("POST", "/something", nil)
+	for _, data := range hasValueTestData {
+		tr := httptest.NewRequest("POST", "/something", nil)
 
-	postedData := url.Values{}
-	postedData.Add("a", "aaa")
+		postedData := url.Values{}
+		postedData.Add(data.fieldName, data.fieldValue)
 
-	tr.PostForm = postedData
-	from := New(tr.PostForm)
-	tr.ParseForm()
+		tr.PostForm = postedData
+		from := New(tr.PostForm)
+		tr.ParseForm()
 
-	result := from.Has("a", tr)
+		result := from.Has(data.fieldName, tr)
 
-	if result != true {
-		t.Errorf("Expected true got %v", result)
+		if result != data.expectedResult {
+			t.Errorf("Expected true got %v", result)
+		}
 	}
+}
+
+var minLengthTestData = []struct {
+	fieldName      string
+	fieldValue     string
+	expectedResult bool
+}{
+	{"a", "", false},
+	{"a", "aaa", false},
+	{"a", "aaaaa", true},
+	{"a", "aaaaaaaa", true},
 }
 
 func TestMinLengthBad(t *testing.T) {
-	tr := httptest.NewRequest("POST", "/something", nil)
+	for _, data := range minLengthTestData {
+		tr := httptest.NewRequest("POST", "/something", nil)
 
-	postedData := url.Values{}
-	postedData.Add("a", "aaa")
+		postedData := url.Values{}
+		postedData.Add(data.fieldName, data.fieldValue)
 
-	tr.PostForm = postedData
-	from := New(tr.PostForm)
-	tr.ParseForm()
+		tr.PostForm = postedData
+		from := New(tr.PostForm)
+		tr.ParseForm()
 
-	result := from.MinLength("a", 5, tr)
+		result := from.MinLength(data.fieldName, 5, tr)
 
-	if result != false {
-		t.Errorf("Expected true got %v", result)
+		if result != data.expectedResult {
+			t.Errorf("Expected true got %v", result)
+		}
 	}
 }
 
-func TestMinLengthOk(t *testing.T) {
-	tr := httptest.NewRequest("POST", "/something", nil)
-
-	postedData := url.Values{}
-	postedData.Add("a", "aaaaa")
-
-	tr.PostForm = postedData
-	from := New(tr.PostForm)
-	tr.ParseForm()
-
-	result := from.MinLength("a", 5, tr)
-
-	if result != true {
-		t.Errorf("Expected true got %v", result)
-	}
+var badEmailTestData = []struct {
+	field string
+	value string
+}{
+	{"a", "aaa"},
+	{"email", "test@test"},
 }
 
 func TestIsEmailBad(t *testing.T) {
-	tr := httptest.NewRequest("POST", "/something", nil)
+	for _, data := range badEmailTestData {
+		tr := httptest.NewRequest("POST", "/something", nil)
 
-	postedData := url.Values{}
-	postedData.Add("a", "aaaaa")
+		postedData := url.Values{}
+		postedData.Add(data.field, data.value)
 
-	tr.PostForm = postedData
-	from := New(tr.PostForm)
-	tr.ParseForm()
+		tr.PostForm = postedData
+		from := New(tr.PostForm)
+		tr.ParseForm()
 
-	from.IsEmail("a")
+		from.IsEmail(data.field)
 
-	result := from.Errors.Get("a")
+		result := from.Errors.Get(data.field)
 
-	if result != "Invalid email address" {
-		t.Error("Expect to see arror not a valid email adderss")
+		if result != "Invalid email address" {
+			t.Error("Expect to see arror not a valid email adderss")
+		}
 	}
 }
-
 
 func TestIsEmailOk(t *testing.T) {
 	tr := httptest.NewRequest("POST", "/something", nil)
@@ -186,4 +190,3 @@ func TestIsEmailOk(t *testing.T) {
 		t.Errorf("Expect to see 0 errors and got %d", len(result))
 	}
 }
-
