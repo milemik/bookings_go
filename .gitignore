@@ -2,4 +2,8 @@
 .history/
 *.vsix
 coverage.out
+
+postgresdb_volume
+
+database.yml
 coverage.html
