@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/milemik/bookings_go/internal/config"
 	"github.com/milemik/bookings_go/internal/forms"
+	"github.com/milemik/bookings_go/internal/helpers"
 	"github.com/milemik/bookings_go/internal/model"
 	"github.com/milemik/bookings_go/internal/render"
 )
@@ -34,23 +34,13 @@ func NewHandlers(r *Reposatory) {
 
 // Home is our home page
 func (m *Reposatory) Home(w http.ResponseWriter, r *http.Request) {
-	remoteIP := r.RemoteAddr
-	m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	render.RenderTemplate(w, r, "home.page.tmpl", &model.TemplateData{})
 }
 
 // About is our about page
 func (m *Reposatory) About(w http.ResponseWriter, r *http.Request) {
-	stringMap := make(map[string]string)
 
-	stringMap["test"] = "Hello again"
-
-	remoteIP := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap["remote_ip"] = remoteIP
-
-	render.RenderTemplate(w, r, "about.page.tmpl", &model.TemplateData{
-		StringMap: stringMap,
-	})
+	render.RenderTemplate(w, r, "about.page.tmpl", &model.TemplateData{})
 }
 
 // Reservation renders the make reservation page
@@ -69,8 +59,8 @@ func (m *Reposatory) Reservation(w http.ResponseWriter, r *http.Request) {
 // Reservation post reservation handle of posting reservation form
 func (m *Reposatory) PostReservation(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	if err == nil {
-		log.Println(err)
+	if err != nil {
+		helpers.ServerError(w, err)
 	}
 	reservation := model.Reservation{
 		FirstName: r.Form.Get("first_name"),
@@ -82,7 +72,7 @@ func (m *Reposatory) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 	// form.Has("first_name", r)
 	form.Required("first_name", "last_name", "email")
-	form.MinLength("first_name", 3, r)
+	form.MinLength("first_name", 3)
 	form.IsEmail("email")
 
 	if !form.Valid() {
@@ -132,7 +122,8 @@ func (m *Reposatory) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 	response := jsonResponse{Ok: true, Message: "Available"}
 	out, err := json.MarshalIndent(response, "", "    ")
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
+		return
 	}
 
 	// log.Println(string(out))
@@ -148,7 +139,7 @@ func (m *Reposatory) Contact(w http.ResponseWriter, r *http.Request) {
 func (m *Reposatory) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(model.Reservation)
 	if !ok {
-		log.Println("Cannot get item from session")
+		m.App.ErrorLog.Println("Cannot get item from session")
 		m.App.Session.Put(r.Context(), "error", "Can't get reservation from session")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return

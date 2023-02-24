@@ -105,7 +105,7 @@ func TestHasValueIsHere(t *testing.T) {
 		from := New(tr.PostForm)
 		tr.ParseForm()
 
-		result := from.Has(data.fieldName, tr)
+		result := from.Has(data.fieldName)
 
 		if result != data.expectedResult {
 			t.Errorf("Expected true got %v", result)
@@ -126,16 +126,15 @@ var minLengthTestData = []struct {
 
 func TestMinLengthBad(t *testing.T) {
 	for _, data := range minLengthTestData {
-		tr := httptest.NewRequest("POST", "/something", nil)
+		tr := url.Values{}
 
 		postedData := url.Values{}
 		postedData.Add(data.fieldName, data.fieldValue)
 
-		tr.PostForm = postedData
-		from := New(tr.PostForm)
-		tr.ParseForm()
+		tr = postedData
+		from := New(tr)
 
-		result := from.MinLength(data.fieldName, 5, tr)
+		result := from.MinLength(data.fieldName, 5)
 
 		if result != data.expectedResult {
 			t.Errorf("Expected true got %v", result)
@@ -153,14 +152,12 @@ var badEmailTestData = []struct {
 
 func TestIsEmailBad(t *testing.T) {
 	for _, data := range badEmailTestData {
-		tr := httptest.NewRequest("POST", "/something", nil)
-
+		tr := url.Values{}
 		postedData := url.Values{}
-		postedData.Add(data.field, data.value)
+		tr.Add(data.field, data.value)
 
-		tr.PostForm = postedData
-		from := New(tr.PostForm)
-		tr.ParseForm()
+		tr = postedData
+		from := New(tr)
 
 		from.IsEmail(data.field)
 
@@ -173,14 +170,12 @@ func TestIsEmailBad(t *testing.T) {
 }
 
 func TestIsEmailOk(t *testing.T) {
-	tr := httptest.NewRequest("POST", "/something", nil)
-
+	tr := url.Values{}
 	postedData := url.Values{}
 	postedData.Add("a", "aaaaa@aaa.com")
 
-	tr.PostForm = postedData
-	from := New(tr.PostForm)
-	tr.ParseForm()
+	tr = postedData
+	from := New(tr)
 
 	from.IsEmail("a")
 
